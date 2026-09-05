@@ -1,0 +1,528 @@
+:root {
+    --glow-color: 25, 0, 255;
+    --face-color: #05122e;
+    --blob-a: #1c2bff;
+    --blob-b: #7b2bff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at 50% 0%, #0c0f1e 0%, #000 70%);
+    color: #eef1ff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+.back-link {
+    position: fixed;
+    top: 18px;
+    left: 22px;
+    color: #9fb1ff;
+    text-decoration: none;
+    font-size: 14px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+}
+
+.back-link:hover {
+    opacity: 1;
+}
+
+.signup-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    min-height: 100vh;
+    padding: 60px 24px;
+}
+
+/* ---------- Avatar ---------- */
+
+.avatar-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 320px;
+}
+
+.avatar-glow {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    filter: blur(40px);
+    background: radial-gradient(circle, rgba(var(--glow-color), 0.55) 0%, rgba(var(--glow-color), 0) 70%);
+    transition: background 0.6s ease;
+    animation: pulseGlow 3.2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes pulseGlow {
+
+    0%,
+    100% {
+        transform: scale(0.95);
+        opacity: 0.75;
+    }
+
+    50% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+}
+
+.avatar-blob {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    transition: transform 0.12s ease-out;
+    will-change: transform;
+}
+
+.blob-inner {
+    position: absolute;
+    inset: 0;
+    border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+    background: linear-gradient(145deg, var(--blob-a), var(--blob-b));
+    box-shadow:
+        0 0 35px rgba(var(--glow-color), 0.8),
+        inset 0 0 40px rgba(255, 255, 255, 0.12),
+        inset 0 -20px 40px rgba(0, 0, 0, 0.35);
+    animation: morph 7s ease-in-out infinite, breathe 4s ease-in-out infinite;
+    transition: box-shadow 0.5s ease, background 0.6s ease;
+}
+
+@keyframes morph {
+
+    0%,
+    100% {
+        border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+    }
+
+    33% {
+        border-radius: 58% 42% 38% 62% / 55% 40% 60% 45%;
+    }
+
+    66% {
+        border-radius: 48% 52% 55% 45% / 60% 55% 45% 40%;
+    }
+}
+
+@keyframes breathe {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.035);
+    }
+}
+
+.blob-inner.shake {
+    animation: morph 7s ease-in-out infinite, breathe 4s ease-in-out infinite, shake 0.45s ease;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        margin-left: 0;
+    }
+
+    20% {
+        margin-left: -10px;
+    }
+
+    40% {
+        margin-left: 8px;
+    }
+
+    60% {
+        margin-left: -6px;
+    }
+
+    80% {
+        margin-left: 4px;
+    }
+}
+
+.blob-inner.celebrate {
+    animation: morph 7s ease-in-out infinite, celebrate 0.6s ease 2;
+}
+
+@keyframes celebrate {
+
+    0%,
+    100% {
+        transform: scale(1) translateY(0);
+    }
+
+    50% {
+        transform: scale(1.12) translateY(-14px);
+    }
+}
+
+.face {
+    position: absolute;
+    inset: 0;
+}
+
+.eyebrow {
+    position: absolute;
+    top: 62px;
+    width: 30px;
+    height: 6px;
+    border-radius: 4px;
+    background: var(--face-color);
+    transition: transform 0.25s ease, opacity 0.25s ease, top 0.25s ease;
+}
+
+.eyebrow.left {
+    left: 44px;
+}
+
+.eyebrow.right {
+    right: 44px;
+}
+
+.eyebrow.raised {
+    transform: translateY(-5px);
+}
+
+.eyebrow.worried.left {
+    transform: rotate(-20deg) translate(3px, 3px);
+}
+
+.eyebrow.worried.right {
+    transform: rotate(20deg) translate(-3px, 3px);
+}
+
+.eye {
+    position: absolute;
+    top: 78px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f4f6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: height 0.2s ease, top 0.2s ease, border-radius 0.2s ease;
+}
+
+.eye.left {
+    left: 40px;
+}
+
+.eye.right {
+    right: 40px;
+}
+
+.pupil {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--face-color);
+    transform: translate(0, 0);
+    transition: opacity 0.15s ease;
+}
+
+.eyelid {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 0%;
+    background: var(--blob-a);
+    transition: height 0.28s ease;
+}
+
+/* closed / shy eyes (password focus) */
+.eye.closed {
+    height: 6px;
+    border-radius: 6px;
+    top: 96px;
+}
+
+.eye.closed .pupil {
+    opacity: 0;
+}
+
+/* happy squint eyes (upward arc) */
+.eye.happy {
+    height: 18px;
+    border-radius: 0 0 20px 20px / 0 0 30px 30px;
+    top: 84px;
+}
+
+.eye.happy .pupil {
+    opacity: 0;
+}
+
+.cheek {
+    position: absolute;
+    top: 118px;
+    width: 20px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 120, 170, 0);
+    transition: background 0.3s ease;
+}
+
+.cheek.left {
+    left: 34px;
+}
+
+.cheek.right {
+    right: 34px;
+}
+
+.avatar-stage.state-happy .cheek,
+.avatar-stage.state-success .cheek {
+    background: rgba(255, 120, 170, 0.55);
+}
+
+.mouth {
+    position: absolute;
+    top: 138px;
+    left: 50%;
+    width: 44px;
+    height: 16px;
+    transform: translateX(-50%);
+    border-bottom: 5px solid var(--face-color);
+    border-radius: 0 0 40px 40px / 0 0 30px 30px;
+    background: transparent;
+    transition: all 0.25s ease;
+}
+
+/* neutral flat mouth while idle/typing name */
+.mouth.flat {
+    height: 4px;
+    border-bottom-width: 4px;
+    border-radius: 4px;
+    top: 142px;
+}
+
+/* talking blip */
+.mouth.talk {
+    height: 10px;
+    border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+    border-bottom-width: 5px;
+    background: var(--face-color);
+    top: 138px;
+}
+
+/* big happy smile */
+.mouth.smile {
+    width: 54px;
+    height: 22px;
+    border-bottom-width: 6px;
+    top: 134px;
+}
+
+/* frown / sad (mismatch, error) */
+.mouth.frown {
+    height: 12px;
+    border-bottom: none;
+    border-top: 5px solid var(--face-color);
+    border-radius: 40px 40px 0 0 / 30px 30px 0 0;
+    top: 148px;
+}
+
+/* small "O" surprised mouth */
+.mouth.o {
+    width: 20px;
+    height: 20px;
+    border: 4px solid var(--face-color);
+    border-radius: 50%;
+    background: transparent;
+    top: 136px;
+}
+
+/* tiny shy line while typing password */
+.mouth.shy {
+    width: 24px;
+    height: 3px;
+    border-bottom-width: 3px;
+    border-radius: 3px;
+    top: 142px;
+}
+
+.avatar-caption {
+    margin-top: 26px;
+    color: #b9c2ff;
+    font-size: 14px;
+    min-height: 20px;
+    text-align: center;
+    transition: opacity 0.2s ease;
+}
+
+/* state -> glow color tinting (set on .avatar-stage so both the outer
+   glow halo and the inner blob, which are siblings, inherit it) */
+.avatar-stage.state-idle,
+.avatar-stage.state-typing {
+    --glow-color: 25, 0, 255;
+}
+
+.avatar-stage.state-happy {
+    --glow-color: 60, 220, 255;
+}
+
+.avatar-stage.state-password {
+    --glow-color: 255, 170, 40;
+}
+
+.avatar-stage.state-mismatch,
+.avatar-stage.state-error {
+    --glow-color: 255, 40, 70;
+}
+
+.avatar-stage.state-success {
+    --glow-color: 60, 255, 140;
+}
+
+/* ---------- Form ---------- */
+
+.signup-form {
+    background: #0e1120c9;
+    border: 1px solid rgba(120, 130, 255, 0.25);
+    box-shadow: 0 0 30px rgba(25, 0, 255, 0.15);
+    border-radius: 20px;
+    padding: 34px 38px;
+    width: 100%;
+    max-width: 360px;
+}
+
+.signup-form h1 {
+    font-size: 22px;
+    margin: 0 0 22px;
+    text-align: center;
+    color: #f2f4ff;
+}
+
+.field-group {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.field-group label {
+    display: block;
+    font-size: 12px;
+    color: #98a3d9;
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.field-group input {
+    width: 100%;
+    background: #131628;
+    border: 1px solid rgba(120, 130, 255, 0.3);
+    color: #fff;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field-group input:focus {
+    border-color: #6b7bff;
+    box-shadow: 0 0 12px rgba(107, 123, 255, 0.5);
+}
+
+.field-group input.invalid {
+    border-color: #ff4a5f;
+    box-shadow: 0 0 12px rgba(255, 74, 95, 0.4);
+}
+
+.field-group input.valid {
+    border-color: #35e0a1;
+    box-shadow: 0 0 12px rgba(53, 224, 161, 0.35);
+}
+
+.field-hint {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+    min-height: 14px;
+    color: #ff8a97;
+}
+
+.field-hint.ok {
+    color: #6ff0be;
+}
+
+.strength-bar {
+    margin-top: 8px;
+    height: 4px;
+    border-radius: 4px;
+    background: #1c2038;
+    overflow: hidden;
+}
+
+.strength-bar span {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff4a5f, #ffb347, #35e0a1);
+    transition: width 0.25s ease;
+}
+
+#signupBtn {
+    width: 100%;
+    padding: 13px;
+    margin-top: 6px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1c2bff, #7b2bff);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    box-shadow: 0 0 18px rgba(90, 60, 255, 0.55);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#signupBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 26px rgba(90, 60, 255, 0.8);
+}
+
+#signupBtn:active {
+    transform: translateY(0);
+}
+
+.form-status {
+    text-align: center;
+    font-size: 13px;
+    min-height: 18px;
+    margin: 14px 0 0;
+    color: #6ff0be;
+}
+
+.form-status.error {
+    color: #ff8a97;
+}
+
+@media (max-width: 720px) {
+    .signup-wrap {
+        gap: 24px;
+    }
+
+    .avatar-stage {
+        width: 100%;
+    }
+}

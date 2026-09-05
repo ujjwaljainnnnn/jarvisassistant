@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jarvis | Sign Up</title>
+
+    <link rel="shortcut icon" href="assets/img/logoo.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="signup.css">
+</head>
+
+<body>
+
+    <a href="index.html" class="back-link">&larr; Back</a>
+
+    <main class="signup-wrap">
+
+        <div class="avatar-stage" id="avatarStage">
+            <div class="avatar-glow" id="avatarGlow"></div>
+
+            <div class="avatar-blob" id="avatarBlob">
+                <div class="blob-inner" id="blobInner">
+                    <div class="face">
+                        <div class="eyebrow left" id="browLeft"></div>
+                        <div class="eyebrow right" id="browRight"></div>
+
+                        <div class="eye left" id="eyeLeft">
+                            <div class="pupil" id="pupilLeft"></div>
+                            <div class="eyelid" id="lidLeft"></div>
+                        </div>
+                        <div class="eye right" id="eyeRight">
+                            <div class="pupil" id="pupilRight"></div>
+                            <div class="eyelid" id="lidRight"></div>
+                        </div>
+
+                        <div class="cheek left"></div>
+                        <div class="cheek right"></div>
+
+                        <div class="mouth" id="mouth"></div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="avatar-caption" id="avatarCaption">Hi! I'm Jarvis. Let's get you set up.</p>
+        </div>
+
+        <form class="signup-form" id="signupForm" novalidate>
+            <h1>Create your account</h1>
+
+            <div class="field-group">
+                <label for="nameInput">Full name</label>
+                <input type="text" id="nameInput" placeholder="Ada Lovelace" autocomplete="off">
+            </div>
+
+            <div class="field-group">
+                <label for="emailInput">Email address</label>
+                <input type="email" id="emailInput" placeholder="ada@example.com" autocomplete="off">
+                <span class="field-hint" id="emailHint"></span>
+            </div>
+
+            <div class="field-group">
+                <label for="passwordInput">Password</label>
+                <input type="password" id="passwordInput" placeholder="At least 8 characters" autocomplete="off">
+                <div class="strength-bar"><span id="strengthFill"></span></div>
+            </div>
+
+            <div class="field-group">
+                <label for="confirmInput">Confirm password</label>
+                <input type="password" id="confirmInput" placeholder="Type it again" autocomplete="off">
+                <span class="field-hint" id="confirmHint"></span>
+            </div>
+
+            <button type="submit" id="signupBtn">Sign Up</button>
+
+            <p class="form-status" id="formStatus"></p>
+        </form>
+
+    </main>
+
+    <script src="signup.js"></script>
+</body>
+
+</html>
