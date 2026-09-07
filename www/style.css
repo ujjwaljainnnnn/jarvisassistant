@@ -16,7 +16,6 @@
 
     --white: #ffffff;
     --white-soft: rgba(255, 255, 255, 0.14);
-    --ring: rgba(255, 255, 255, 0.18);
 
     --danger: #ff6b6b;
 
@@ -149,16 +148,6 @@ button, input {
     box-shadow: 0 10px 28px rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
     background: #f0f0f1;
-}
-
-.btn-ghost {
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-}
-
-.btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.08);
 }
 
 .btn-block {
@@ -414,6 +403,22 @@ button, input {
     background: rgba(0, 0, 0, 0.35);
 }
 
+.field select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2397979d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+.field select option {
+    background: var(--bg-elevated);
+    color: var(--text);
+}
+
 .auth-form .btn-block {
     margin-top: 4px;
 }
@@ -498,7 +503,7 @@ button, input {
     border-radius: 50%;
     overflow: hidden;
     background: radial-gradient(circle at 50% 42%, #1d1d20 0%, #0a0a0b 72%);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07), 0 30px 80px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
 }
 
 .orb::before,

@@ -149,6 +149,9 @@ class NotesSession:
 
         threading.Thread(target=self._watch, daemon=True).start()
 
+    def is_active(self):
+        return not self._stopped_event.is_set()
+
     def request_stop(self):
         if self._stopped_event.is_set():
             return

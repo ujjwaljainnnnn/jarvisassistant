@@ -3,6 +3,7 @@
 understood from either voice or typed text."""
 
 import datetime
+import re
 
 from engine.config import ASSISTANT_NAME
 from engine.features import openCommand
@@ -62,7 +63,9 @@ def handle_text_command(query, window_title=""):
     if not query:
         return "I didn't catch that."
 
-    if "open" in query:
+    # Word-boundary match so "opening", "reopen", "open source", etc. --
+    # a substring check would wrongly treat those as "open <app>" commands.
+    if re.search(r"\bopen\b", query):
         openCommand(query)
         return None
 

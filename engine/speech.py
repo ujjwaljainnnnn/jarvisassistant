@@ -47,14 +47,16 @@ def listen(timeout=10, phrase_time_limit=6, on_status=None):
             recognizer.pause_threshold = 1
             recognizer.adjust_for_ambient_noise(source)
             audio = recognizer.listen(source, timeout=timeout, phrase_time_limit=phrase_time_limit)
-    except OSError as exc:
-        if on_status:
-            on_status("No microphone available.")
-        print(f"Microphone error: {exc}")
-        return ""
     except sr.WaitTimeoutError:
         if on_status:
             on_status("Didn't hear anything.")
+        return ""
+    except Exception as exc:
+        # Covers OSError ("no default input device") as well as PyAudio
+        # being missing entirely (raised as AttributeError by speech_recognition).
+        if on_status:
+            on_status("No microphone available.")
+        print(f"Microphone error: {exc}")
         return ""
 
     try:

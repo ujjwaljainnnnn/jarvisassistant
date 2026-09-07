@@ -29,6 +29,10 @@ def takeCommand():
 def _start_notes_session():
     global _active_notes_session
 
+    if _active_notes_session and _active_notes_session.is_active():
+        speak("I'm already taking notes -- say 'stop notes' when you're done.")
+        return
+
     def _on_finished(organized_text, _path):
         eel.SetOrganizedNotes(organized_text)
         speak("Your notes are organized and saved.")

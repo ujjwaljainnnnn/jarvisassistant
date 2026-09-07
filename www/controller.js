@@ -139,6 +139,12 @@ $(document).ready(function () {
 
     function showAuthOverlay(show) {
         $("#AuthOverlay").attr("hidden", !show);
+        if (!show) {
+            // Only safe to focus the composer once we know it's actually
+            // visible -- doing this unconditionally on page load would
+            // focus it a moment before the auth overlay covers it.
+            $("#Chatbox").trigger("focus");
+        }
     }
 
     function showAuthTab(tab) {

@@ -99,7 +99,12 @@ class NotesPanel(QWidget):
         self.status_changed.connect(self.status_label.setText)
         self.session_finished.connect(self._on_finished)
 
+    def is_active(self):
+        return bool(self.session and self.session.is_active())
+
     def start_session(self):
+        if self.is_active():
+            return
         self.raw_log.clear()
         self.organized_log.clear()
         self.session = NotesSession(
@@ -212,6 +217,12 @@ class ChatPanel(QWidget):
                 _speak_async(reply)
 
     def start_notes_session(self):
+        if self.notes_panel.is_active():
+            self._append("Jarvis", "I'm already taking notes -- say 'stop notes' when you're done.")
+            self.notes_panel.show()
+            self.notes_panel.raise_()
+            return
+
         self._append("Jarvis", "Starting a notes session -- say 'stop notes' when you're done.")
         if self.speak_replies:
             _speak_async("Sure, go ahead. Say stop notes when you're finished.")
