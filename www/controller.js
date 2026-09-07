@@ -52,7 +52,9 @@ $(document).ready(function () {
         }
         $("#Chatbox").val("");
         $("#ChatResponse").text("Thinking...");
-        eel.sendTextCommand(text)();
+        eel.sendTextCommand(text)(function (reply) {
+            $("#ChatResponse").text(reply || "");
+        });
     }
 
     $("#ChatB").click(sendChatText);

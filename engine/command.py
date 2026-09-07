@@ -52,17 +52,23 @@ def requestStopNotes():
 
 @eel.expose
 def sendTextCommand(text):
+    """Handle a typed command and return the reply text so the JS side
+    can display it (speak() only produces audio, which isn't visible
+    feedback on its own)."""
     text = (text or "").strip()
     if not text:
-        return
+        return ""
 
     if brain.is_notes_trigger(text):
         _start_notes_session()
-        return
+        return "Starting a notes session -- say 'stop notes' when you're done."
 
     reply = brain.handle_text_command(text)
     if reply:
         speak(reply)
+        return reply
+
+    return "Done."
 
 
 @eel.expose
