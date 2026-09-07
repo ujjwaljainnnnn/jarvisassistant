@@ -7,7 +7,7 @@ $(document).ready(function () {
             effect: 'bounceIn',
         },
         out: {
-            effect: 'bounceOut',s
+            effect: 'bounceOut',
         },
     })
    
