@@ -1,7 +1,7 @@
 """Voice note-taking: say "take notes", ramble as much as you like, say
 "stop notes" -- Jarvis turns the raw transcript into clean, organized
-notes (via Claude when ANTHROPIC_API_KEY is set, otherwise a simple
-offline cleanup) and saves them to disk.
+notes (via an AI provider when one is configured, see engine.ai,
+otherwise a simple offline cleanup) and saves them to disk.
 """
 
 import datetime
@@ -11,7 +11,7 @@ import threading
 
 import speech_recognition as sr
 
-from engine.ai import ask_claude, is_available
+from engine.ai import ask_ai, is_available
 from engine.brain import is_notes_stop
 
 NOTES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "notes")
@@ -75,7 +75,7 @@ def organize_notes(chunks):
 
     if is_available():
         transcript = "\n".join(chunks)
-        organized = ask_claude(ORGANIZE_SYSTEM_PROMPT, transcript)
+        organized = ask_ai(ORGANIZE_SYSTEM_PROMPT, transcript)
         if organized:
             return organized
 

@@ -1,5 +1,13 @@
 $(document).ready(function () {
 
+    function flashSuccess(btn, message) {
+        var originalTooltip = btn.attr("data-tooltip");
+        btn.addClass("is-success").attr("data-tooltip", message || "Done");
+        setTimeout(function () {
+            btn.removeClass("is-success").attr("data-tooltip", originalTooltip);
+        }, 1400);
+    }
+
     eel.expose(DisplayMessage) //displaying status/replies during voice commands and notes sessions
     function DisplayMessage(message) {
         $("#StatusText").text(message);
@@ -73,16 +81,22 @@ $(document).ready(function () {
     $("#NotesCopyB").click(function () {
         var text = $("#NotesOrganized").text();
         if (navigator.clipboard && text) {
-            navigator.clipboard.writeText(text);
+            navigator.clipboard.writeText(text).then(function () {
+                flashSuccess($("#NotesCopyB"), "Copied!");
+            });
         }
     });
 
     // ----- Settings modal -----
+    function updateAiStatus(status) {
+        status = status || {};
+        $("#AiStatus").toggleClass("is-enabled", !!status.enabled);
+        $("#AiStatusText").text(status.enabled ? "Connected: " + status.provider : "Offline mode");
+    }
+
     function openSettings() {
         $("#SettingsModal").attr("hidden", false);
-        eel.getAiStatus()(function (enabled) {
-            $("#AiStatus").text(enabled ? "AI answers: enabled" : "AI answers: offline mode");
-        });
+        eel.getAiStatus()(updateAiStatus);
     }
 
     function closeSettings() {
@@ -102,9 +116,11 @@ $(document).ready(function () {
     });
 
     $("#SaveApiKeyB").click(function () {
+        var provider = $("#ProviderSelect").val();
         var key = $("#ApiKeyInput").val();
-        eel.setApiKey(key)(function (enabled) {
-            $("#AiStatus").text(enabled ? "AI answers: enabled" : "AI answers: offline mode");
+        eel.setApiKey(provider, key)(function (status) {
+            updateAiStatus(status);
+            flashSuccess($("#SaveApiKeyB"), "Saved!");
         });
         $("#ApiKeyInput").val("");
     });
@@ -116,8 +132,9 @@ $(document).ready(function () {
     });
 
     // ----- Login / signup -----
-    function setLoggedInUser(name) {
-        $("#UserGreeting").text("Hi, " + name);
+    function setLoggedInUser(user) {
+        $("#UserGreeting").text("Hi, " + user.name);
+        $("#AccountEmail").text(user.email || "");
     }
 
     function showAuthOverlay(show) {
@@ -143,7 +160,7 @@ $(document).ready(function () {
         $("#LoginError").text("");
         eel.loginUser(email, password)(function (res) {
             if (res.success) {
-                setLoggedInUser(res.name);
+                setLoggedInUser(res);
                 showAuthOverlay(false);
                 $("#LoginPassword").val("");
             } else {
@@ -160,7 +177,7 @@ $(document).ready(function () {
         $("#SignupError").text("");
         eel.signupUser(name, email, password)(function (res) {
             if (res.success) {
-                setLoggedInUser(res.name);
+                setLoggedInUser(res);
                 showAuthOverlay(false);
                 $("#SignupPassword").val("");
             } else {
@@ -173,7 +190,7 @@ $(document).ready(function () {
     // login/signup screen and block the assistant until the user is in.
     eel.getRememberedUser()(function (user) {
         if (user) {
-            setLoggedInUser(user.name);
+            setLoggedInUser(user);
             showAuthOverlay(false);
         } else {
             showAuthOverlay(true);

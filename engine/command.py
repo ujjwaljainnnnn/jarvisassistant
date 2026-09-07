@@ -78,19 +78,23 @@ def setSpeakReplies(enabled):
 
 
 @eel.expose
-def setApiKey(key):
+def setApiKey(provider, key):
+    from engine.ai import PROVIDER_ENV_VARS
+
+    env_var = PROVIDER_ENV_VARS.get(provider)
     key = (key or "").strip()
-    if key:
-        os.environ["ANTHROPIC_API_KEY"] = key
-    else:
-        os.environ.pop("ANTHROPIC_API_KEY", None)
+    if env_var:
+        if key:
+            os.environ[env_var] = key
+        else:
+            os.environ.pop(env_var, None)
     return getAiStatus()
 
 
 @eel.expose
 def getAiStatus():
-    from engine.ai import is_available
-    return is_available()
+    from engine.ai import get_status
+    return get_status()
 
 
 @eel.expose

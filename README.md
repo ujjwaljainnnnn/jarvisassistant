@@ -48,6 +48,26 @@ Sign up** screen. Create an account with a name, email, and password
 both `main.py` and `jarvis_overlay.py` - no need to log in every time.
 Log out from the hood UI's Settings panel, or the overlay's tray menu.
 
+## Connecting a real AI
+
+Without any setup, both front ends answer from a small offline
+knowledge base (app shortcuts, time/date, opening sites) and a rule-
+based note cleanup. To get real, open-ended answers and genuinely
+AI-organized notes, connect any one of these -- Jarvis auto-detects
+whichever is present, checked in this order:
+
+| Provider | Where to get a key | Env var |
+|---|---|---|
+| Claude (Anthropic) | console.anthropic.com | `ANTHROPIC_API_KEY` |
+| ChatGPT (OpenAI) | platform.openai.com | `OPENAI_API_KEY` |
+| Gemini (Google) | aistudio.google.com | `GEMINI_API_KEY` |
+
+Easiest: open the hood UI's **Settings** (gear icon), pick a provider,
+and paste the key -- it's kept in memory for that run only, never
+written to disk. Or export the matching env var before launching
+either front end. Only paste a key somewhere you trust; this app never
+sends it anywhere but the provider you picked.
+
 ## Running the hood UI
 
 ```bash
@@ -60,8 +80,8 @@ Opens `http://localhost:8000` in your default browser.
   it", or "take notes".
 - **Chat box + send button**: type the same kinds of commands instead of
   speaking them; press Enter to send.
-- **Settings (gear icon)**: toggle spoken replies, set an API key for
-  smarter answers, or log out.
+- **Settings (gear icon)**: toggle spoken replies, connect a Claude,
+  ChatGPT, or Gemini API key for smarter answers, or log out.
 
 ## Running the floating companion / tutor
 
@@ -81,10 +101,16 @@ A small glowing dot appears next to your cursor and follows it around.
 
 By default it answers from a small built-in knowledge base of tips, so it
 works fully offline. To get real, open-ended answers instead of just the
-built-in tips, set an API key before launching:
+built-in tips, set one of these before launching (whichever you have --
+Jarvis auto-detects it):
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
+export ANTHROPIC_API_KEY=sk-ant-...     # Claude
+# or
+export OPENAI_API_KEY=sk-...            # ChatGPT
+# or
+export GEMINI_API_KEY=...               # Gemini
+
 python jarvis_overlay.py
 ```
 
@@ -96,10 +122,10 @@ including all the "um"s, tangents, and backtracking. Say **"stop
 notes"** (or click **Stop & Organize**) when you're done.
 
 Jarvis then turns your rambling into clean, organized notes:
-- With `ANTHROPIC_API_KEY` set, Claude groups your points into headings
-  and bullets, fixes grammar, and removes filler - without inventing
-  anything you didn't say.
-- Without an API key, an offline fallback still strips filler words,
+- With an AI provider connected (Settings, or an env var -- see above),
+  it groups your points into headings and bullets, fixes grammar, and
+  removes filler - without inventing anything you didn't say.
+- Without one, an offline fallback still strips filler words,
   de-duplicates repeated points, and turns each thing you said into a
   clean bullet point.
 

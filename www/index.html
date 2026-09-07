@@ -80,24 +80,17 @@
 
         <main class="hero" id="Oval">
             <div class="orb-wrap">
-                <canvas id="canvasOne" width="420" height="420"></canvas>
-                <div id="JarvisHood" class="orb-glow">
-                    <div class="square">
-                        <span class="circle"></span>
-                        <span class="circle"></span>
-                        <span class="circle"></span>
-                    </div>
-                </div>
+                <div class="orb"><span class="orb-core"></span></div>
             </div>
 
             <h1 class="prompt-heading">What can I help with?</h1>
 
             <div class="composer">
                 <input type="text" class="composer-input" name="Chatbox" id="Chatbox" placeholder="Ask anything, or say &quot;take notes&quot;&hellip;" autocomplete="off">
-                <button type="button" id="MicB" class="icon-btn icon-btn-accent" title="Speak" aria-label="Speak">
+                <button type="button" id="MicB" class="icon-btn icon-btn-accent" data-tooltip="Speak" aria-label="Speak">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v3"/><path d="M9 21h6"/></svg>
                 </button>
-                <button type="button" id="ChatB" class="icon-btn" title="Send" aria-label="Send">
+                <button type="button" id="ChatB" class="icon-btn" data-tooltip="Send" aria-label="Send">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
                 </button>
             </div>
@@ -105,8 +98,8 @@
         </main>
 
         <section class="hero hero-listening" id="ListeningView" hidden>
-            <div class="equalizer" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span>
+            <div class="orb-wrap orb-wrap--active">
+                <div class="orb"><span class="orb-core"></span></div>
             </div>
             <p id="StatusText" class="status-text">Listening&hellip;</p>
         </section>
@@ -117,9 +110,14 @@
     <aside id="NotesPanel" class="notes-panel">
         <div class="notes-header">
             <span class="notes-title">Notes</span>
-            <button type="button" id="NotesCloseB" class="icon-btn icon-btn-ghost" aria-label="Close notes">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
-            </button>
+            <div class="notes-header-actions">
+                <button type="button" id="NotesCopyB" class="icon-btn icon-btn-ghost" data-tooltip="Copy" aria-label="Copy organized notes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                </button>
+                <button type="button" id="NotesCloseB" class="icon-btn icon-btn-ghost" aria-label="Close notes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+                </button>
+            </div>
         </div>
         <p id="NotesStatus" class="notes-status"></p>
 
@@ -130,8 +128,10 @@
         <pre id="NotesOrganized" class="notes-organized"></pre>
 
         <div class="notes-actions">
-            <button type="button" id="NotesStopB" class="btn btn-primary btn-sm">Stop &amp; organize</button>
-            <button type="button" id="NotesCopyB" class="btn btn-ghost btn-sm">Copy</button>
+            <button type="button" id="NotesStopB" class="btn btn-primary btn-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>
+                Stop &amp; organize
+            </button>
         </div>
     </aside>
 
@@ -145,24 +145,45 @@
                 </button>
             </div>
             <div class="modal-body">
-                <label class="switch-row">
-                    <span>Speak replies out loud</span>
-                    <span class="switch">
-                        <input type="checkbox" id="SpeakRepliesToggle" checked>
-                        <span class="switch-track"></span>
-                    </span>
-                </label>
+                <div class="settings-section">
+                    <label class="switch-row">
+                        <span>Speak replies out loud</span>
+                        <span class="switch">
+                            <input type="checkbox" id="SpeakRepliesToggle" checked>
+                            <span class="switch-track"></span>
+                        </span>
+                    </label>
+                </div>
 
-                <div class="field">
-                    <span class="field-label">Anthropic API key (this session only)</span>
-                    <div class="field-row">
-                        <input type="password" id="ApiKeyInput" placeholder="sk-ant-...">
-                        <button type="button" id="SaveApiKeyB" class="btn btn-primary btn-sm">Save</button>
+                <div class="settings-section">
+                    <div class="field">
+                        <span class="field-label">AI provider</span>
+                        <select id="ProviderSelect">
+                            <option value="anthropic">Claude (Anthropic)</option>
+                            <option value="openai">ChatGPT (OpenAI)</option>
+                            <option value="gemini">Gemini (Google)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <span class="field-label">API key (this session only)</span>
+                        <div class="field-row">
+                            <input type="password" id="ApiKeyInput" placeholder="Paste your key">
+                            <button type="button" id="SaveApiKeyB" class="icon-btn" data-tooltip="Save key" aria-label="Save API key">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p id="AiStatus" class="ai-status"><span class="ai-status-dot"></span><span id="AiStatusText">Offline mode</span></p>
+                </div>
+
+                <div class="settings-section">
+                    <div class="account-row">
+                        <span class="account-email" id="AccountEmail"></span>
+                        <button type="button" id="LogoutB" class="icon-btn icon-btn-danger icon-btn-sm" data-tooltip="Log out" aria-label="Log out">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                        </button>
                     </div>
                 </div>
-                <p id="AiStatus" class="ai-status"></p>
-
-                <button type="button" id="LogoutB" class="btn btn-danger-ghost btn-sm">Log out</button>
             </div>
         </div>
     </div>
@@ -170,7 +191,6 @@
     <!-- Jquery (only external script kept -- everything else is self-contained) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 
-    <script src="script.js"></script>
     <script src="main.js"></script>
     <script src="controller.js"></script>
     <script src="/eel.js"></script>

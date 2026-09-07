@@ -1,13 +1,14 @@
 """The "brain" behind the floating overlay's chat / tutor panel.
 
 Works fully offline out of the box with a small rule-based knowledge base
-of tips for common apps and general commands. If an ANTHROPIC_API_KEY
-environment variable is set, questions that the rule-based layer can't
-answer are instead sent to Claude, along with the active window title as
-context, so the assistant can give real, situation-aware answers.
+of tips for common apps and general commands. If an API key is configured
+for Claude, ChatGPT, or Gemini (see engine.ai), questions that the
+rule-based layer can't answer are instead sent to that model, along with
+the active window title as context, so the assistant can give real,
+situation-aware answers.
 """
 
-from engine.ai import ask_claude
+from engine.ai import ask_ai
 
 # Lightweight, offline "how do I..." tips keyed by (substring of window
 # title -> substring of query -> answer). Checked before falling back to
@@ -70,7 +71,7 @@ def _llm_answer(query, window_title):
         "Give short, practical, actionable answers (2-4 sentences), as if "
         "guiding them live while they work."
     )
-    return ask_claude(system_prompt, query, max_tokens=300)
+    return ask_ai(system_prompt, query, max_tokens=300)
 
 
 def get_response(query, window_title=""):
@@ -87,6 +88,7 @@ def get_response(query, window_title=""):
         return answer
 
     return (
-        "I don't have a built-in answer for that yet. Set ANTHROPIC_API_KEY "
-        "to let me ask Claude for a real answer."
+        "I don't have a built-in answer for that yet. Add a Claude, "
+        "ChatGPT, or Gemini API key in Settings to let me look up a "
+        "real answer."
     )

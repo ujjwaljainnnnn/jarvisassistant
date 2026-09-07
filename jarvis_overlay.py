@@ -9,10 +9,12 @@ a rambling voice note into clean, organized notes.
 Usage:
     python jarvis_overlay.py
 
-Optional:
-    ANTHROPIC_API_KEY  - set this to let unanswered questions -- and note
-                          organizing -- be routed to Claude for a real
-                          answer instead of the built-in offline tips.
+Optional -- set one of these to let unanswered questions (and note
+organizing) be routed to a real model instead of the built-in offline
+tips:
+    ANTHROPIC_API_KEY  - Claude
+    OPENAI_API_KEY     - ChatGPT
+    GEMINI_API_KEY     - Gemini
 """
 
 import os
