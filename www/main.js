@@ -35,11 +35,4 @@ $(document).ready(function () {
             sync:true,
         },
     })
-
-    $("#MicB").click(function () { 
-        eel.playAssistantSound()
-        $("#Oval").attr("hidden", true);
-        $("#SiriWave").attr("hidden", false);
-        eel.allCommands()()
-    });
 });

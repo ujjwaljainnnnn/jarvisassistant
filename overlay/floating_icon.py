@@ -3,10 +3,13 @@
 A small always-on-top, click-through-free glowing dot that hovers near the
 mouse cursor. Click it to open a chat panel that can answer questions
 by voice or text, aware of whatever window you currently have focused --
-so you never have to alt-tab, screenshot, or copy-paste context in.
+so you never have to alt-tab, screenshot, or copy-paste context in. Say
+(or type) "take notes" and it opens a side panel that turns your rambling
+into clean, organized notes.
 """
 
 import math
+import threading
 
 from PyQt5.QtCore import QPoint, Qt, QThread, QTimer, pyqtSignal
 from PyQt5.QtGui import QColor, QCursor, QIcon, QPainter, QPixmap, QRadialGradient
@@ -23,12 +26,18 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from engine import auth, brain
 from engine.active_window import get_active_window_title
+from engine.notes import NotesSession
 from engine.speech import listen, speak
-from engine.tutor import get_response
 
 ICON_SIZE = 46
 CURSOR_OFFSET = QPoint(18, 18)
+
+
+def _speak_async(text):
+    """Fire-and-forget TTS so it never freezes the UI thread."""
+    threading.Thread(target=speak, args=(text,), daemon=True).start()
 
 
 class ListenWorker(QThread):
@@ -42,21 +51,98 @@ class ListenWorker(QThread):
         self.finished_with_text.emit(text)
 
 
+class NotesPanel(QWidget):
+    """Side panel that captures a rambling voice note-taking session and
+    shows the AI-organized (or offline-cleaned) result."""
+
+    chunk_received = pyqtSignal(str)
+    status_changed = pyqtSignal(str)
+    session_finished = pyqtSignal(str, str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent, Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setWindowTitle("Jarvis Notes")
+        self.resize(360, 480)
+        self.session = None
+
+        layout = QVBoxLayout(self)
+
+        header = QHBoxLayout()
+        header.addWidget(QLabel("<b>Notes</b>"))
+        header.addStretch()
+        close_btn = QPushButton("x")
+        close_btn.setFixedWidth(24)
+        close_btn.clicked.connect(self._on_close)
+        header.addWidget(close_btn)
+        layout.addLayout(header)
+
+        self.status_label = QLabel("")
+        self.status_label.setStyleSheet("color: #4aa3ff; font-size: 11px;")
+        layout.addWidget(self.status_label)
+
+        layout.addWidget(QLabel("Raw transcript:"))
+        self.raw_log = QTextEdit()
+        self.raw_log.setReadOnly(True)
+        self.raw_log.setMaximumHeight(120)
+        layout.addWidget(self.raw_log)
+
+        layout.addWidget(QLabel("Organized notes:"))
+        self.organized_log = QTextEdit()
+        self.organized_log.setReadOnly(True)
+        layout.addWidget(self.organized_log)
+
+        stop_btn = QPushButton("Stop && Organize")
+        stop_btn.clicked.connect(self._on_stop_clicked)
+        layout.addWidget(stop_btn)
+
+        self.chunk_received.connect(self._append_raw)
+        self.status_changed.connect(self.status_label.setText)
+        self.session_finished.connect(self._on_finished)
+
+    def start_session(self):
+        self.raw_log.clear()
+        self.organized_log.clear()
+        self.session = NotesSession(
+            on_chunk=self.chunk_received.emit,
+            on_status=self.status_changed.emit,
+            on_finished=self.session_finished.emit,
+        )
+        self.session.start()
+
+    def _append_raw(self, text):
+        self.raw_log.append(text)
+
+    def _on_finished(self, organized_text, path):
+        self.organized_log.setPlainText(organized_text)
+        self.status_label.setText(f"Saved to {path}")
+
+    def _on_stop_clicked(self):
+        if self.session:
+            self.session.request_stop()
+
+    def _on_close(self):
+        if self.session:
+            self.session.request_stop()
+        self.hide()
+
+
 class ChatPanel(QWidget):
     """The small conversation window that opens when the icon is clicked."""
 
-    def __init__(self, parent=None):
+    def __init__(self, notes_panel, user=None, parent=None):
         super().__init__(parent, Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground, False)
         self.setWindowTitle("Jarvis")
         self.resize(340, 380)
         self.speak_replies = True
+        self.notes_panel = notes_panel
         self._listen_worker = None
 
         layout = QVBoxLayout(self)
 
         header = QHBoxLayout()
-        title = QLabel("<b>Jarvis</b> - digital tutor")
+        greeting = f"hi, {user['name']}" if user else "digital tutor"
+        title = QLabel(f"<b>Jarvis</b> - {greeting}")
         header.addWidget(title)
         header.addStretch()
         close_btn = QPushButton("x")
@@ -79,7 +165,7 @@ class ChatPanel(QWidget):
 
         input_row = QHBoxLayout()
         self.input_box = QLineEdit()
-        self.input_box.setPlaceholderText("Ask about what's on your screen...")
+        self.input_box.setPlaceholderText("Ask about what's on your screen, or say 'take notes'...")
         self.input_box.returnPressed.connect(self._on_send_clicked)
         input_row.addWidget(self.input_box)
 
@@ -93,7 +179,7 @@ class ChatPanel(QWidget):
 
         layout.addLayout(input_row)
 
-        self._append("Jarvis", "Hi! Click Mic or type a question about your screen.")
+        self._append("Jarvis", "Hi! Click Mic or type a question about your screen -- or say 'take notes'.")
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -112,12 +198,27 @@ class ChatPanel(QWidget):
 
     def _handle_query(self, text):
         self._append("You", text)
+
+        if brain.is_notes_trigger(text):
+            self.start_notes_session()
+            return
+
         window_title = get_active_window_title()
         self.context_label.setText(f"Watching: {window_title}" if window_title else "")
-        reply = get_response(text, window_title)
-        self._append("Jarvis", reply)
+        reply = brain.handle_text_command(text, window_title)
+        if reply:
+            self._append("Jarvis", reply)
+            if self.speak_replies:
+                _speak_async(reply)
+
+    def start_notes_session(self):
+        self._append("Jarvis", "Starting a notes session -- say 'stop notes' when you're done.")
         if self.speak_replies:
-            speak(reply)
+            _speak_async("Sure, go ahead. Say stop notes when you're finished.")
+        self.notes_panel.move(self.pos().x() + self.width(), self.pos().y())
+        self.notes_panel.show()
+        self.notes_panel.raise_()
+        self.notes_panel.start_session()
 
     def _on_mic_clicked(self):
         if self._listen_worker and self._listen_worker.isRunning():
@@ -136,7 +237,7 @@ class ChatPanel(QWidget):
 class FloatingIcon(QWidget):
     """The glowing dot that lives next to the mouse cursor."""
 
-    def __init__(self):
+    def __init__(self, user=None):
         super().__init__(
             None,
             Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool,
@@ -148,7 +249,8 @@ class FloatingIcon(QWidget):
         self._drag_offset = None
         self._phase = 0.0
 
-        self.chat_panel = ChatPanel()
+        self.notes_panel = NotesPanel()
+        self.chat_panel = ChatPanel(self.notes_panel, user=user)
 
         self._move_timer = QTimer(self)
         self._move_timer.timeout.connect(self._follow_cursor_tick)
@@ -234,6 +336,9 @@ def build_tray_icon(app, icon_widget):
     toggle_chat_action = menu.addAction("Open / Close chat")
     toggle_chat_action.triggered.connect(icon_widget.toggle_chat)
 
+    notes_action = menu.addAction("Take notes")
+    notes_action.triggered.connect(icon_widget.chat_panel.start_notes_session)
+
     def _toggle_follow():
         icon_widget.follow_cursor = not icon_widget.follow_cursor
 
@@ -247,6 +352,14 @@ def build_tray_icon(app, icon_widget):
     toggle_speak_action.triggered.connect(_toggle_speak)
 
     menu.addSeparator()
+
+    def _logout():
+        auth.logout()
+        app.quit()
+
+    logout_action = menu.addAction("Log out")
+    logout_action.triggered.connect(_logout)
+
     quit_action = menu.addAction("Quit Jarvis")
     quit_action.triggered.connect(app.quit)
 
@@ -258,11 +371,11 @@ def build_tray_icon(app, icon_widget):
     return tray
 
 
-def run():
-    app = QApplication.instance() or QApplication([])
+def run(app=None, user=None):
+    app = app or QApplication.instance() or QApplication([])
     app.setQuitOnLastWindowClosed(False)
 
-    icon_widget = FloatingIcon()
+    icon_widget = FloatingIcon(user=user)
     tray = build_tray_icon(app, icon_widget)  # noqa: F841 -- keep tray alive
 
     app.exec_()

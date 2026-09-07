@@ -7,12 +7,7 @@ answer are instead sent to Claude, along with the active window title as
 context, so the assistant can give real, situation-aware answers.
 """
 
-import os
-
-import requests
-
-ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
-ANTHROPIC_MODEL = os.environ.get("JARVIS_MODEL", "claude-sonnet-5")
+from engine.ai import ask_claude
 
 # Lightweight, offline "how do I..." tips keyed by (substring of window
 # title -> substring of query -> answer). Checked before falling back to
@@ -69,39 +64,13 @@ def _rule_based_answer(query, window_title):
 
 
 def _llm_answer(query, window_title):
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        return None
-
     system_prompt = (
         "You are Jarvis, a concise on-screen desktop tutor. The user is "
         f"currently focused on this window: '{window_title or 'unknown'}'. "
         "Give short, practical, actionable answers (2-4 sentences), as if "
         "guiding them live while they work."
     )
-
-    try:
-        response = requests.post(
-            ANTHROPIC_API_URL,
-            headers={
-                "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json",
-            },
-            json={
-                "model": ANTHROPIC_MODEL,
-                "max_tokens": 300,
-                "system": system_prompt,
-                "messages": [{"role": "user", "content": query}],
-            },
-            timeout=15,
-        )
-        response.raise_for_status()
-        data = response.json()
-        return "".join(block.get("text", "") for block in data.get("content", []))
-    except requests.RequestException as exc:
-        print(f"Tutor LLM request failed: {exc}")
-        return None
+    return ask_claude(system_prompt, query, max_tokens=300)
 
 
 def get_response(query, window_title=""):
