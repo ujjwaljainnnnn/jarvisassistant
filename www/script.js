@@ -17,7 +17,7 @@ function windowLoadHandler() {
 }
 
 function canvasSupport() {
-	return Modernizr.canvas;
+	return !!window.CanvasRenderingContext2D;
 }
 
 function canvasApp() {

@@ -1,20 +1,16 @@
 $(document).ready(function () {
 
-    eel.expose(DisplayMessage) //displaying message when siri wave is played from the mic button
+    eel.expose(DisplayMessage) //displaying status/replies during voice commands and notes sessions
     function DisplayMessage(message) {
-
-        $(".siri-message li:first").text(message);
-        $('.siri-message').textillate('start');
+        $("#StatusText").text(message);
         $("#NotesStatus").text(message);
-
     }
 
 
     eel.expose(ShowHood)     //going back to hood
     function ShowHood() {
         $("#Oval").attr("hidden", false);
-        $("#SiriWave").attr("hidden", true);
-
+        $("#ListeningView").attr("hidden", true);
     }
 
     eel.expose(ShowNotesPanel)   //opening the side notes panel when a notes session starts
@@ -39,8 +35,9 @@ $(document).ready(function () {
     // ----- Mic button (existing voice command flow) -----
     $("#MicB").click(function () {
         eel.playAssistantSound()
+        $("#StatusText").text("Listening...");
         $("#Oval").attr("hidden", true);
-        $("#SiriWave").attr("hidden", false);
+        $("#ListeningView").attr("hidden", false);
         eel.allCommands()()
     });
 
@@ -81,6 +78,25 @@ $(document).ready(function () {
     });
 
     // ----- Settings modal -----
+    function openSettings() {
+        $("#SettingsModal").attr("hidden", false);
+        eel.getAiStatus()(function (enabled) {
+            $("#AiStatus").text(enabled ? "AI answers: enabled" : "AI answers: offline mode");
+        });
+    }
+
+    function closeSettings() {
+        $("#SettingsModal").attr("hidden", true);
+    }
+
+    $("#SettingsB").click(openSettings);
+    $("#SettingsCloseB").click(closeSettings);
+    $("#SettingsModal").on("mousedown", function (e) {
+        if (e.target === this) {
+            closeSettings();
+        }
+    });
+
     $("#SpeakRepliesToggle").on("change", function () {
         eel.setSpeakReplies($(this).is(":checked"))();
     });
@@ -91,12 +107,6 @@ $(document).ready(function () {
             $("#AiStatus").text(enabled ? "AI answers: enabled" : "AI answers: offline mode");
         });
         $("#ApiKeyInput").val("");
-    });
-
-    $("#SettingsModal").on("show.bs.modal", function () {
-        eel.getAiStatus()(function (enabled) {
-            $("#AiStatus").text(enabled ? "AI answers: enabled" : "AI answers: offline mode");
-        });
     });
 
     $("#LogoutB").click(function () {
@@ -114,19 +124,17 @@ $(document).ready(function () {
         $("#AuthOverlay").attr("hidden", !show);
     }
 
-    $("#ShowSignupLink").click(function (e) {
-        e.preventDefault();
-        $("#LoginForm").attr("hidden", true);
-        $("#SignupForm").attr("hidden", false);
-        $("#LoginError").text("");
-    });
+    function showAuthTab(tab) {
+        var isLogin = tab === "login";
+        $("#TabLogin").toggleClass("is-active", isLogin);
+        $("#TabSignup").toggleClass("is-active", !isLogin);
+        $("#LoginForm").attr("hidden", !isLogin);
+        $("#SignupForm").attr("hidden", isLogin);
+        $("#LoginError, #SignupError").text("");
+    }
 
-    $("#ShowLoginLink").click(function (e) {
-        e.preventDefault();
-        $("#SignupForm").attr("hidden", true);
-        $("#LoginForm").attr("hidden", false);
-        $("#SignupError").text("");
-    });
+    $("#TabLogin").click(function () { showAuthTab("login"); });
+    $("#TabSignup").click(function () { showAuthTab("signup"); });
 
     $("#LoginForm").on("submit", function (e) {
         e.preventDefault();
@@ -169,6 +177,7 @@ $(document).ready(function () {
             showAuthOverlay(false);
         } else {
             showAuthOverlay(true);
+            $("#Chatbox").trigger("blur");
         }
     });
 });

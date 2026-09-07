@@ -1,38 +1,22 @@
 $(document).ready(function () {
 
-    $('.text').textillate({
-        loop: true,
-        sync: true,
-        in: {
-            effect: 'bounceIn',
-        },
-        out: {
-            effect: 'bounceOut',
-        },
-    })
-   
-    
-    var siriWave = new SiriWave({
-        container: document.getElementById("siri-container"),
-        width: 800,
-        height: 200,
-        style:"ios9",
-        speed: "0.30",
-        amplitude: "1",
-        autostart: true,
-      });
+    // Keep the composer focused and ready to type as soon as the hood is visible.
+    function focusComposer() {
+        if (!$("#AuthOverlay").is(":visible")) {
+            $("#Chatbox").trigger("focus");
+        }
+    }
+    focusComposer();
 
-    
-    $('.siri-message').textillate({
-        loop: true,
-        sync: true,
-        in: {
-            effect: 'fadeInUp',
-            sync:true,
-        },
-        out: {
-            effect: 'fadeOutUp',
-            sync:true,
-        },
-    })
+    // Esc closes whichever overlay is open, without needing a mouse.
+    $(document).on("keydown", function (e) {
+        if (e.key !== "Escape") {
+            return;
+        }
+        if ($("#SettingsModal").is(":visible")) {
+            $("#SettingsModal").attr("hidden", true);
+        } else if ($("#NotesPanel").hasClass("open")) {
+            $("#NotesCloseB").trigger("click");
+        }
+    });
 });
