@@ -169,9 +169,19 @@ $(document).ready(function () {
         });
     });
 
+    // ----- Private mode -----
+    $("#PrivateModeB").click(function () {
+        var enabled = !$(this).hasClass("is-active");
+        $(this).toggleClass("is-active", enabled).attr("aria-pressed", String(enabled));
+        $("#PrivateModeBanner").attr("hidden", !enabled);
+        eel.setPrivateMode(enabled)();
+    });
+
     // ----- Login / signup -----
     function setLoggedInUser(user) {
+        var firstName = (user.name || "").split(" ")[0] || user.name;
         $("#UserGreeting").text("Hi, " + user.name);
+        $("#PromptHeading").text(pickGreeting(firstName));
         $("#AccountEmail").text(user.email || "");
     }
 

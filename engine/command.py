@@ -55,6 +55,12 @@ def requestStopNotes():
 
 
 @eel.expose
+def setPrivateMode(enabled):
+    from engine.tutor import set_private_mode
+    set_private_mode(enabled)
+
+
+@eel.expose
 def newChat():
     """Clear conversation memory so old context doesn't bleed into a
     fresh topic. The visible transcript is cleared client-side."""

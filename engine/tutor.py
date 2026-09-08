@@ -17,10 +17,24 @@ from engine.ai import ask_ai
 _conversation_history = []
 MAX_HISTORY_MESSAGES = 12  # 6 user/assistant exchanges
 
+# Private mode (like ChatGPT's "temporary chat"): while on, a turn uses no
+# prior context and is never added to memory afterward -- fully isolated,
+# not just hidden from the transcript.
+_private_mode = False
+
 
 def reset_conversation():
     """Start a fresh conversation -- called by "New chat" and on logout."""
     _conversation_history.clear()
+
+
+def set_private_mode(enabled):
+    global _private_mode
+    _private_mode = bool(enabled)
+
+
+def is_private_mode():
+    return _private_mode
 
 
 # Lightweight, offline "how do I..." tips keyed by (substring of window
@@ -84,8 +98,9 @@ def _llm_answer(query, window_title):
         "Give short, practical, actionable answers (2-4 sentences), as if "
         "guiding them live while they work."
     )
-    reply = ask_ai(system_prompt, query, max_tokens=300, history=_conversation_history)
-    if reply:
+    history = [] if _private_mode else _conversation_history
+    reply = ask_ai(system_prompt, query, max_tokens=300, history=history)
+    if reply and not _private_mode:
         _conversation_history.append({"role": "user", "content": query})
         _conversation_history.append({"role": "assistant", "content": reply})
         del _conversation_history[:-MAX_HISTORY_MESSAGES]

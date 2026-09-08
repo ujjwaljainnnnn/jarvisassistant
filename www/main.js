@@ -39,6 +39,29 @@ function renderChatMarkdown(text) {
     return out.join("");
 }
 
+// A changing greeting for the hero heading, similar to ChatGPT/Claude's
+// "Back at it, {name}" -- picked fresh each time the hood is shown, mixing
+// a time-of-day-aware option in with a few fixed ones for variety.
+function pickGreeting(name) {
+    var hour = new Date().getHours();
+    var timeGreeting =
+        hour < 5 ? "Burning the midnight oil, " + name + "?" :
+        hour < 12 ? "Good morning, " + name :
+        hour < 17 ? "Good afternoon, " + name :
+        hour < 21 ? "Good evening, " + name :
+        "Working late, " + name + "?";
+
+    var options = [
+        timeGreeting,
+        "Back at it, " + name,
+        "Welcome back, " + name,
+        "Good to see you, " + name,
+        "Ready when you are, " + name,
+        "What can I help with, " + name + "?",
+    ];
+    return options[Math.floor(Math.random() * options.length)];
+}
+
 $(document).ready(function () {
 
     // Esc closes whichever overlay is open, without needing a mouse.

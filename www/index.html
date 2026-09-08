@@ -72,6 +72,9 @@
             </div>
             <div class="topbar-right">
                 <span id="UserGreeting" class="user-greeting"></span>
+                <button type="button" id="PrivateModeB" class="icon-btn" data-tooltip="Private mode" aria-label="Toggle private mode" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01M15 10h.01M12 3c4.4 0 8 3.2 8 8v7.5c0 .8-.9 1.3-1.6.9l-2-1.2a2 2 0 0 0-1-.2H12c-4.4 0-8-3.2-8-8s3.6-7 8-7Z"/></svg>
+                </button>
                 <button type="button" id="NewChatB" class="icon-btn" data-tooltip="New chat" aria-label="Start a new chat">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                 </button>
@@ -86,7 +89,7 @@
                 <div class="orb"><span class="orb-core"></span></div>
             </div>
 
-            <h1 class="prompt-heading">What can I help with?</h1>
+            <h1 id="PromptHeading" class="prompt-heading">What can I help with?</h1>
 
             <div class="composer">
                 <input type="text" class="composer-input" name="Chatbox" id="Chatbox" placeholder="Ask anything, or say &quot;take notes&quot;&hellip;" autocomplete="off">
@@ -97,6 +100,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
                 </button>
             </div>
+            <p id="PrivateModeBanner" class="private-banner" hidden>Private mode -- this conversation won't be remembered.</p>
             <div id="ChatLog" class="chat-log" aria-live="polite"></div>
         </main>
 
