@@ -177,12 +177,98 @@ $(document).ready(function () {
         eel.setPrivateMode(enabled)();
     });
 
+    // ----- Projects -----
+    function switchToProject(project) {
+        $("#ProjectName").text(project.name);
+        eel.switchProject(project.id || null, project.name)();
+        $("#ChatLog").empty();
+        closeProjectMenu();
+    }
+
+    function renderProjectList(items, currentId) {
+        var list = $("#ProjectList").empty();
+
+        function addRow(id, name) {
+            var isCurrent = (id || null) === (currentId || null);
+            var row = $("<button>")
+                .attr("type", "button")
+                .addClass("project-item")
+                .toggleClass("is-current", isCurrent)
+                .append(
+                    $("<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>")
+                )
+                .append($("<span>").text(name))
+                .on("click", function () {
+                    switchToProject({ id: id, name: name });
+                });
+            list.append(row);
+        }
+
+        addRow(null, "General");
+        items.forEach(function (p) { addRow(p.id, p.name); });
+    }
+
+    function loadProjects() {
+        eel.getCurrentProject()(function (current) {
+            $("#ProjectName").text(current.name);
+            eel.listProjects()(function (items) {
+                renderProjectList(items || [], current.id);
+            });
+        });
+    }
+
+    function openProjectMenu() {
+        $("#ProjectMenu").attr("hidden", false);
+        $(".project-switcher").addClass("is-open");
+        $("#ProjectButton").attr("aria-expanded", "true");
+        loadProjects();
+    }
+
+    function closeProjectMenu() {
+        $("#ProjectMenu").attr("hidden", true);
+        $(".project-switcher").removeClass("is-open");
+        $("#ProjectButton").attr("aria-expanded", "false");
+        $("#ProjectError").text("");
+        $("#NewProjectInput").val("");
+    }
+
+    $("#ProjectButton").click(function () {
+        if ($("#ProjectMenu").is(":visible")) {
+            closeProjectMenu();
+        } else {
+            openProjectMenu();
+        }
+    });
+
+    $(document).on("mousedown", function (e) {
+        if (!$(e.target).closest(".project-switcher").length) {
+            closeProjectMenu();
+        }
+    });
+
+    $("#NewProjectForm").on("submit", function (e) {
+        e.preventDefault();
+        var name = $("#NewProjectInput").val().trim();
+        if (!name) {
+            return;
+        }
+        $("#ProjectError").text("");
+        eel.createProject(name)(function (res) {
+            if (res.success) {
+                switchToProject(res.project);
+            } else {
+                $("#ProjectError").text(res.message);
+            }
+        });
+    });
+
     // ----- Login / signup -----
     function setLoggedInUser(user) {
         var firstName = (user.name || "").split(" ")[0] || user.name;
         $("#UserGreeting").text("Hi, " + user.name);
         $("#PromptHeading").text(pickGreeting(firstName));
         $("#AccountEmail").text(user.email || "");
+        loadProjects();
     }
 
     function showAuthOverlay(show) {

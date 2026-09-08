@@ -9,6 +9,11 @@ a rambling voice note into clean, organized notes.
 Usage:
     python jarvis_overlay.py
 
+Required -- Jarvis signs you in and stores projects/notes via Supabase;
+see the README's "Supabase setup" section:
+    SUPABASE_URL       - your Supabase project's API URL
+    SUPABASE_ANON_KEY  - your project's anon/publishable key
+
 Optional -- set one of these to let unanswered questions (and note
 organizing) be routed to a real model instead of the built-in offline
 tips:
@@ -21,6 +26,18 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from engine.db import is_configured
+
+if not is_configured():
+    sys.exit(
+        "Jarvis needs a Supabase project to sign you in and store your "
+        "projects/notes.\n\n"
+        "Set these environment variables and try again:\n"
+        "  SUPABASE_URL=https://<your-project-ref>.supabase.co\n"
+        "  SUPABASE_ANON_KEY=<your project's anon/publishable key>\n\n"
+        "See the README's 'Supabase setup' section for step-by-step instructions."
+    )
 
 from PyQt5.QtWidgets import QApplication
 

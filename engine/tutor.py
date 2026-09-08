@@ -9,12 +9,15 @@ situation-aware answers.
 """
 
 from engine.ai import ask_ai
+from engine import projects
 
-# Rolling memory of the LLM conversation so follow-up questions ("what
+# Rolling memory of the LLM conversation, keyed per user+project (see
+# engine.projects.history_key) so switching projects gets its own clean
+# context instead of one tangled conversation. Follow-up questions ("what
 # about the other one?") work instead of every question being answered
 # in isolation. Rule-based tips are stateless one-liners and deliberately
 # don't participate in this -- only real model turns need continuity.
-_conversation_history = []
+_conversation_histories = {}
 MAX_HISTORY_MESSAGES = 12  # 6 user/assistant exchanges
 
 # Private mode (like ChatGPT's "temporary chat"): while on, a turn uses no
@@ -23,9 +26,14 @@ MAX_HISTORY_MESSAGES = 12  # 6 user/assistant exchanges
 _private_mode = False
 
 
+def _current_history():
+    return _conversation_histories.setdefault(projects.history_key(), [])
+
+
 def reset_conversation():
-    """Start a fresh conversation -- called by "New chat" and on logout."""
-    _conversation_history.clear()
+    """Start a fresh conversation for the current project -- called by
+    "New chat" and on logout."""
+    _conversation_histories[projects.history_key()] = []
 
 
 def set_private_mode(enabled):
@@ -98,12 +106,12 @@ def _llm_answer(query, window_title):
         "Give short, practical, actionable answers (2-4 sentences), as if "
         "guiding them live while they work."
     )
-    history = [] if _private_mode else _conversation_history
+    history = [] if _private_mode else _current_history()
     reply = ask_ai(system_prompt, query, max_tokens=300, history=history)
     if reply and not _private_mode:
-        _conversation_history.append({"role": "user", "content": query})
-        _conversation_history.append({"role": "assistant", "content": reply})
-        del _conversation_history[:-MAX_HISTORY_MESSAGES]
+        history.append({"role": "user", "content": query})
+        history.append({"role": "assistant", "content": reply})
+        del history[:-MAX_HISTORY_MESSAGES]
     return reply
 
 

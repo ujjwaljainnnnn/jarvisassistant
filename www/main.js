@@ -71,6 +71,9 @@ $(document).ready(function () {
         }
         if ($("#SettingsModal").is(":visible")) {
             $("#SettingsModal").attr("hidden", true);
+        } else if ($("#ProjectMenu").is(":visible")) {
+            $("#ProjectMenu").attr("hidden", true);
+            $(".project-switcher").removeClass("is-open");
         } else if ($("#NotesPanel").hasClass("open")) {
             $("#NotesCloseB").trigger("click");
         }

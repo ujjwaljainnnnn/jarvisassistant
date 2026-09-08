@@ -66,9 +66,30 @@
     <div class="app-shell">
 
         <header class="topbar">
-            <div class="brand brand-sm">
-                <span class="brand-mark"></span>
-                <span class="brand-name">Jarvis</span>
+            <div class="topbar-left">
+                <div class="brand brand-sm">
+                    <span class="brand-mark"></span>
+                    <span class="brand-name">Jarvis</span>
+                </div>
+
+                <div class="project-switcher">
+                    <button type="button" id="ProjectButton" class="project-pill" aria-haspopup="true" aria-expanded="false">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+                        <span id="ProjectName">General</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div id="ProjectMenu" class="project-menu" hidden>
+                        <div id="ProjectList" class="project-list"></div>
+                        <div class="project-menu-divider"></div>
+                        <form id="NewProjectForm" class="project-new-row">
+                            <input type="text" id="NewProjectInput" placeholder="New project name" maxlength="60">
+                            <button type="submit" class="icon-btn icon-btn-sm" data-tooltip="Create">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                            </button>
+                        </form>
+                        <p id="ProjectError" class="form-error"></p>
+                    </div>
+                </div>
             </div>
             <div class="topbar-right">
                 <span id="UserGreeting" class="user-greeting"></span>

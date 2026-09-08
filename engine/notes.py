@@ -11,8 +11,11 @@ import threading
 
 import speech_recognition as sr
 
+from engine import projects
 from engine.ai import ask_ai, is_available
+from engine.auth import get_current_user
 from engine.brain import is_notes_stop
+from engine.db import get_client
 
 NOTES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "notes")
 
@@ -83,11 +86,32 @@ def organize_notes(chunks):
 
 
 def save_notes(organized_text):
-    os.makedirs(NOTES_DIR, exist_ok=True)
+    """Save the organized notes locally (always) and to Supabase (best
+    effort -- a network hiccup shouldn't lose a note that's already
+    safely on disk)."""
+    project = projects.get_current_project()
+    subdir = projects.slugify(project["name"]) if project["id"] else ""
+    target_dir = os.path.join(NOTES_DIR, subdir) if subdir else NOTES_DIR
+
+    os.makedirs(target_dir, exist_ok=True)
     filename = f"notes_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
-    path = os.path.join(NOTES_DIR, filename)
+    path = os.path.join(target_dir, filename)
     with open(path, "w", encoding="utf-8") as handle:
         handle.write(organized_text)
+
+    user = get_current_user()
+    if user:
+        try:
+            get_client().table("notes").insert(
+                {
+                    "user_id": user["id"],
+                    "project_id": project["id"],
+                    "content": organized_text,
+                }
+            ).execute()
+        except Exception as exc:
+            print(f"Could not sync note to Supabase (saved locally at {path}): {exc}")
+
     return path
 
 

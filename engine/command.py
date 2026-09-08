@@ -115,6 +115,39 @@ def getAiStatus():
 
 
 @eel.expose
+def listProjects():
+    from engine import projects
+    return projects.list_projects()
+
+
+@eel.expose
+def createProject(name):
+    from engine import projects
+    try:
+        project = projects.create_project(name)
+        return {"success": True, "project": project}
+    except ValueError as exc:
+        return {"success": False, "message": str(exc)}
+
+
+@eel.expose
+def switchProject(project_id, project_name):
+    from engine import projects
+
+    project = {"id": project_id or None, "name": project_name or projects.DEFAULT_PROJECT["name"]}
+    projects.set_current_project(project)
+    # No need to touch conversation memory here -- engine.tutor keys its
+    # history by (user, project) and lazily starts a fresh list the first
+    # time this project is chatted in.
+
+
+@eel.expose
+def getCurrentProject():
+    from engine import projects
+    return projects.get_current_project()
+
+
+@eel.expose
 def allCommands():
     query = takeCommand()
     print(query)
