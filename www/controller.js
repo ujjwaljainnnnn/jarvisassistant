@@ -40,6 +40,39 @@ $(document).ready(function () {
         $("#NotesOrganized").text(text);
     }
 
+    // ----- Chat transcript -----
+    function scrollChatToBottom() {
+        var el = document.getElementById("ChatLog");
+        el.scrollTop = el.scrollHeight;
+    }
+
+    function appendBubble(role, text) {
+        var bubble = $("<div>").addClass("chat-bubble chat-bubble--" + role);
+        if (role === "assistant") {
+            bubble.html(renderChatMarkdown(text));
+        } else {
+            bubble.text(text);
+        }
+        $("#ChatLog").append(bubble);
+        scrollChatToBottom();
+    }
+
+    function showPendingBubble() {
+        if ($("#PendingBubble").length) {
+            return;
+        }
+        $("#ChatLog").append(
+            '<div id="PendingBubble" class="chat-bubble chat-bubble--pending"><span></span><span></span><span></span></div>'
+        );
+        scrollChatToBottom();
+    }
+
+    eel.expose(AppendChatMessage)   // pushed from Python for both voice and typed turns
+    function AppendChatMessage(role, text) {
+        $("#PendingBubble").remove();
+        appendBubble(role, text);
+    }
+
     // ----- Mic button (existing voice command flow) -----
     $("#MicB").click(function () {
         eel.playAssistantSound()
@@ -56,10 +89,9 @@ $(document).ready(function () {
             return;
         }
         $("#Chatbox").val("");
-        $("#ChatResponse").text("Thinking...");
-        eel.sendTextCommand(text)(function (reply) {
-            $("#ChatResponse").text(reply || "");
-        });
+        appendBubble("user", text);
+        showPendingBubble();
+        eel.sendTextCommand(text)();
     }
 
     $("#ChatB").click(sendChatText);
@@ -68,6 +100,12 @@ $(document).ready(function () {
             e.preventDefault();
             sendChatText();
         }
+    });
+
+    // ----- New chat -----
+    $("#NewChatB").click(function () {
+        eel.newChat()();
+        $("#ChatLog").empty();
     });
 
     // ----- Notes panel controls -----

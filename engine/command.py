@@ -55,24 +55,31 @@ def requestStopNotes():
 
 
 @eel.expose
+def newChat():
+    """Clear conversation memory so old context doesn't bleed into a
+    fresh topic. The visible transcript is cleared client-side."""
+    from engine.tutor import reset_conversation
+    reset_conversation()
+
+
+@eel.expose
 def sendTextCommand(text):
-    """Handle a typed command and return the reply text so the JS side
-    can display it (speak() only produces audio, which isn't visible
-    feedback on its own)."""
+    """Handle a typed command. The "you said" bubble is already shown
+    optimistically by the caller; this only needs to push Jarvis's side
+    of the conversation into the transcript."""
     text = (text or "").strip()
     if not text:
-        return ""
+        return
 
     if brain.is_notes_trigger(text):
         _start_notes_session()
-        return "Starting a notes session -- say 'stop notes' when you're done."
+        eel.AppendChatMessage("assistant", "Starting a notes session -- say 'stop notes' when you're done.")
+        return
 
     reply = brain.handle_text_command(text)
     if reply:
         speak(reply)
-        return reply
-
-    return "Done."
+    eel.AppendChatMessage("assistant", reply or "Done.")
 
 
 @eel.expose
@@ -110,13 +117,17 @@ def allCommands():
         eel.ShowHood()
         return
 
+    eel.AppendChatMessage("user", query)
+
     if brain.is_notes_trigger(query):
         _start_notes_session()
+        eel.AppendChatMessage("assistant", "Starting a notes session -- say 'stop notes' when you're done.")
         eel.ShowHood()
         return
 
     reply = brain.handle_text_command(query)
     if reply:
         speak(reply)
+    eel.AppendChatMessage("assistant", reply or "Done.")
 
     eel.ShowHood()

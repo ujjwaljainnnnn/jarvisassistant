@@ -50,7 +50,8 @@ def get_status():
     return {"enabled": False, "provider": None}
 
 
-def _ask_anthropic(system_prompt, user_prompt, max_tokens):
+def _ask_anthropic(system_prompt, user_prompt, max_tokens, history):
+    messages = list(history) + [{"role": "user", "content": user_prompt}]
     response = requests.post(
         ANTHROPIC_API_URL,
         headers={
@@ -62,7 +63,7 @@ def _ask_anthropic(system_prompt, user_prompt, max_tokens):
             "model": ANTHROPIC_MODEL,
             "max_tokens": max_tokens,
             "system": system_prompt,
-            "messages": [{"role": "user", "content": user_prompt}],
+            "messages": messages,
         },
         timeout=30,
     )
@@ -71,7 +72,12 @@ def _ask_anthropic(system_prompt, user_prompt, max_tokens):
     return "".join(block.get("text", "") for block in data.get("content", []))
 
 
-def _ask_openai(system_prompt, user_prompt, max_tokens):
+def _ask_openai(system_prompt, user_prompt, max_tokens, history):
+    messages = (
+        [{"role": "system", "content": system_prompt}]
+        + list(history)
+        + [{"role": "user", "content": user_prompt}]
+    )
     response = requests.post(
         OPENAI_API_URL,
         headers={
@@ -81,10 +87,7 @@ def _ask_openai(system_prompt, user_prompt, max_tokens):
         json={
             "model": OPENAI_MODEL,
             "max_tokens": max_tokens,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
+            "messages": messages,
         },
         timeout=30,
     )
@@ -93,13 +96,20 @@ def _ask_openai(system_prompt, user_prompt, max_tokens):
     return data["choices"][0]["message"]["content"]
 
 
-def _ask_gemini(system_prompt, user_prompt, max_tokens):
+def _ask_gemini(system_prompt, user_prompt, max_tokens, history):
+    # Gemini uses "model" instead of "assistant" for the reply role.
+    contents = [
+        {"role": "model" if msg["role"] == "assistant" else "user", "parts": [{"text": msg["content"]}]}
+        for msg in history
+    ]
+    contents.append({"role": "user", "parts": [{"text": user_prompt}]})
+
     response = requests.post(
         GEMINI_API_URL,
         params={"key": os.environ["GEMINI_API_KEY"]},
         json={
             "systemInstruction": {"parts": [{"text": system_prompt}]},
-            "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
+            "contents": contents,
             "generationConfig": {"maxOutputTokens": max_tokens},
         },
         timeout=30,
@@ -120,13 +130,18 @@ _PROVIDER_FUNCS = {
 }
 
 
-def ask_ai(system_prompt, user_prompt, max_tokens=600):
-    """Return a reply from whichever provider is configured, or None."""
+def ask_ai(system_prompt, user_prompt, max_tokens=600, history=None):
+    """Return a reply from whichever provider is configured, or None.
+
+    `history` is an optional list of {"role": "user"|"assistant", "content": str}
+    dicts giving prior turns, so the model can follow up on earlier
+    context instead of treating every question in isolation.
+    """
     provider = _active_provider()
     if not provider:
         return None
     try:
-        text = _PROVIDER_FUNCS[provider](system_prompt, user_prompt, max_tokens)
+        text = _PROVIDER_FUNCS[provider](system_prompt, user_prompt, max_tokens, history or [])
         return text.strip() if text else None
     except requests.RequestException as exc:
         print(f"{PROVIDER_LABELS[provider]} request failed: {exc}")

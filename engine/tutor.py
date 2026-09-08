@@ -10,6 +10,19 @@ situation-aware answers.
 
 from engine.ai import ask_ai
 
+# Rolling memory of the LLM conversation so follow-up questions ("what
+# about the other one?") work instead of every question being answered
+# in isolation. Rule-based tips are stateless one-liners and deliberately
+# don't participate in this -- only real model turns need continuity.
+_conversation_history = []
+MAX_HISTORY_MESSAGES = 12  # 6 user/assistant exchanges
+
+
+def reset_conversation():
+    """Start a fresh conversation -- called by "New chat" and on logout."""
+    _conversation_history.clear()
+
+
 # Lightweight, offline "how do I..." tips keyed by (substring of window
 # title -> substring of query -> answer). Checked before falling back to
 # an LLM call, so the assistant is still useful with zero configuration.
@@ -71,7 +84,12 @@ def _llm_answer(query, window_title):
         "Give short, practical, actionable answers (2-4 sentences), as if "
         "guiding them live while they work."
     )
-    return ask_ai(system_prompt, query, max_tokens=300)
+    reply = ask_ai(system_prompt, query, max_tokens=300, history=_conversation_history)
+    if reply:
+        _conversation_history.append({"role": "user", "content": query})
+        _conversation_history.append({"role": "assistant", "content": reply})
+        del _conversation_history[:-MAX_HISTORY_MESSAGES]
+    return reply
 
 
 def get_response(query, window_title=""):

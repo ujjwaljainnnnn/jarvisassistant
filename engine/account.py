@@ -36,5 +36,8 @@ def getRememberedUser():
 
 @eel.expose
 def logoutUser():
+    from engine.tutor import reset_conversation
+
     auth.logout()
+    reset_conversation()
     return {"success": True}

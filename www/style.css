@@ -629,23 +629,92 @@ button, input {
     color: var(--text-faint);
 }
 
-.chat-response {
-    max-width: min(560px, 88vw);
+.chat-log {
+    width: min(560px, 88vw);
+    max-height: 40vh;
+    overflow-y: auto;
     margin: 18px 0 0;
-    padding: 12px 18px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    color: var(--text);
-    font-size: 14px;
-    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.chat-response:empty {
+.chat-log:empty {
     display: none;
-    padding: 0;
     margin: 0;
-    border: none;
+}
+
+.chat-bubble {
+    max-width: 88%;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.chat-bubble p {
+    margin: 0 0 8px;
+}
+
+.chat-bubble p:last-child {
+    margin-bottom: 0;
+}
+
+.chat-bubble ul {
+    margin: 4px 0 8px;
+    padding-left: 20px;
+}
+
+.chat-bubble code {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.92em;
+}
+
+.chat-bubble--user {
+    align-self: flex-end;
+    background: var(--white);
+    color: #0a0a0b;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-bubble--assistant {
+    align-self: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+}
+
+.chat-bubble--pending {
+    align-self: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-bottom-left-radius: 4px;
+    display: flex;
+    gap: 4px;
+    padding: 14px 16px;
+}
+
+.chat-bubble--pending span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    animation: pending-bounce 1s ease-in-out infinite;
+}
+
+.chat-bubble--pending span:nth-child(2) { animation-delay: 0.15s; }
+.chat-bubble--pending span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes pending-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
 }
 
 /* ============================================================
