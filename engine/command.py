@@ -39,15 +39,25 @@ def takeCommand():
 
 @eel.expose
 def allCommands():
+    """Listen once, route the spoken command to the right skill, then return to the idle UI."""
+    from engine.features import openCommand, tellTime, tellDate, searchGoogle, playYoutube
 
-    query=takeCommand() 
+    query = takeCommand()
     print(query)
 
-    if "open" in query:
-        from engine.features import openCommand
+    if not query:
+        speak("Sorry, I didn't hear anything")
+    elif "open" in query:
         openCommand(query)
+    elif "time" in query:
+        tellTime()
+    elif "date" in query or "day is it" in query:
+        tellDate()
+    elif "youtube" in query or query.startswith("play"):
+        playYoutube(query)
+    elif "search" in query or "google" in query:
+        searchGoogle(query)
     else:
-        print("not run")   
+        speak("I can open apps and websites, tell the time or date, search Google, or play YouTube")
 
-    eel.showhood()
-    
+    eel.ShowHood()
